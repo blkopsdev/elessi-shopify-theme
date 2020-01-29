@@ -1,0 +1,50 @@
+{%- layout none -%}
+{%- capture min_html -%}
+{%- assign settings_pr_img_size = settings.use_eq_height_search -%}
+{%- if settings.use_wishlist -%}{%- include 'nitro-wishlist' -%}{%- endif -%}
+{%- assign class_lg = '12' -%}
+{%- assign class_xs = '12' -%}
+{%- assign image_size = '200x' -%}
+{%- if search.terms != blank -%}
+  {%- assign results_count = search.results_count -%}
+  {%- if results_count == 0 or search.performed == false -%}
+     <li class="product-item fs__16 col-12 animate_move">{{ 'general.search.no_results_html' | t: terms: search.terms }}</li>
+  {%- else -%}
+     {%- for item in search.results limit:8 -%}
+         {%- assign index = forloop.index -%}
+         {%- if item.object_type == 'product' -%}
+         <li class="animate_move product_item product-item product_item product-item col-6 col-md-3 col-lg-15 col-xl-2 col-lg-18{%- if index > 6 %} one{%- endif %}{%- if index == 6 %} two{%- endif %}{%- if index == 5 %} three{%- endif %}{%- if index < 5 and index > 2 %} four{%- endif -%}">
+            {%- include 'nt_product_loop',product:item -%}
+         </li>
+         {%- else -%}
+            <li class="animate_move product_item product-item grid product_item product-item col-6 col-md-3 col-lg-15 col-xl-2 col-lg-18{%- if index > 6 %} one{%- endif %}{%- if index == 6 %} two{%- endif %}{%- if index == 5 %} three{%- endif %}{%- if index < 5 and index > 2 %} four{%- endif -%}">
+               <div class="product_img">
+                  <a href="{{ item.url }}">
+                     {%- if item.image != blank -%}
+                     {%- assign image_0 = item.image -%}
+                     <img src="{{ image_0 | img_url: image_size }}" srcset="{{ image_0 | img_url: image_size }} 1x, {{ image_0 | img_url: image_size, scale: 2 }} 2x" class="w__100 attachment-shop_catalog size-shop_catalog sp-post-image" alt="{{image_0.alt | escape }}">
+                     {%- endif -%}
+                  </a>
+               </div>
+               <div class="product-info-wrap pr">
+                  <div class="name nasa-show-one-line"><a href="{{ item.url }}">{{ item.title | highlight: search.terms }}</a></div>
+               </div>
+            </li>
+         {%- endif -%}
+     {%- endfor -%}
+     {%- if results_count > 9 -%}
+     <li class="animate_move more_result one col-12"><a href="{%- if settings.only_search_products -%}/search?type=product&q={{ search.terms }}{%- else -%}/search?q={{ search.terms }}{%- endif -%}" class="view_all fs__16">{{ 'general.search.search_ajax_results' | t :count: results_count }}</a></li>
+     {%- elsif results_count > 6 -%}
+     <li class="animate_move more_result two col-12"><a href="{%- if settings.only_search_products -%}/search?type=product&q={{ search.terms }}{%- else -%}/search?q={{ search.terms }}{%- endif -%}" class="view_all fs__16">{{ 'general.search.search_ajax_results' | t :count: results_count }}</a></li>
+     {%- elsif results_count > 5 -%}
+     <li class="animate_move more_result three col-12"><a href="{%- if settings.only_search_products -%}/search?type=product&q={{ search.terms }}{%- else -%}/search?q={{ search.terms }}{%- endif -%}" class="view_all fs__16">{{ 'general.search.search_ajax_results' | t :count: results_count }}</a></li>
+     {%- elsif results_count > 4 -%}
+     <li class="animate_move more_result four col-12"><a href="{%- if settings.only_search_products -%}/search?type=product&q={{ search.terms }}{%- else -%}/search?q={{ search.terms }}{%- endif -%}" class="view_all fs__16">{{ 'general.search.search_ajax_results' | t :count: results_count }}</a></li>
+     {%- elsif results_count > 2 -%}
+     <li class="animate_move more_result five col-12"><a href="{%- if settings.only_search_products -%}/search?type=product&q={{ search.terms }}{%- else -%}/search?q={{ search.terms }}{%- endif -%}" class="view_all fs__16">{{ 'general.search.search_ajax_results' | t :count: results_count }}</a></li>
+     {%- endif -%}
+  {%- endif -%}
+{%- endif -%}
+{%- endcapture -%}
+{{min_html | strip_newlines | remove: "  "}} 
+

@@ -1,0 +1,47 @@
+{%- if settings.size_name_check != blank -%}{%- assign _gl_size_name = settings.size_name_check | replace: ' ,', ',' | replace: ', ', ',' | split: ',' -%}{%- assign gl_size_name = _gl_size_name | downcase -%}{%-else-%}{%- assign gl_size_name = '\nathan_dt\' -%}{%-endif-%}
+{%- assign lang_option = 'Größe'| downcase -%}
+{%- if select_id == 'nt_select_quick'-%}
+   {%- assign select_id = 'nt_select_quick' -%}
+   {%- assign select_class = 'nt_none_' -%}   
+{%- else -%}
+   {%- assign select_id = 'nt_select' -%}
+   {%- assign select_class = 'nt_select_pr_' -%}    
+{%- endif -%}
+{%- unless cl_selected -%}
+{%- assign cl_selected = 'is-selected-none' -%}
+{%- endunless -%}
+<div class="variations variant_square">
+	{%- for option in product.options_with_values -%}
+      {%- assign option_index = forloop.index0 -%}
+      {%- assign downcased_option = option.name | downcase -%}
+      {%- assign downcased_option_check = downcased_option | prepend: '"' | append: '"' | strip -%}
+         {%- if downcased_option == 'color' or downcased_option == 'couleur' or downcased_option == 'colour' or gl_color_name contains downcased_option_check -%}
+			   <div class="{{select_class}}{{ option_index }} swatch is-color{%- if forloop.last == true %} mb__25{%- else %} mb__15{%- endif -%}" data-option-index="{{ option_index }}" id="{{select_id}}_{{ option_index }}">
+			   	{%- capture for_color -%}
+			   	   {%- for value in option.values -%}
+			   		   <li data-index="{{ forloop.index0 }}" aria-label='{{ value | capitalize }}' class="nt-swatch bg_css_{{ value | handleize }}{%- if first_available_variant and option.selected_value == value %}{%- assign is_selected = value | capitalize %} {{cl_selected}}{%- elsif forloop.first == true and product.selected_variant == blank and first_available_variant == false %}{%- assign is_selected = value | capitalize %} {{cl_selected}}{%- elsif option.selected_value == value and product.selected_variant != blank and first_available_variant == false %}{%- assign is_selected = value %} {{cl_selected}}{%- endif %}" data-value='{{ value | handleize }}' data-bcvalue='bc_{{ value | handleize }}'><a href="javascript:void(0);" data-val='{{ value | handleize  }}'>{{ value }}</a></li>
+			   	   {%- endfor -%}
+			   	{%- endcapture -%}
+			   	<h4 class="swatch__title">{{option.name}}: <span class="nt_name_current">{{is_selected }}</span></h4>
+			   	<ul class="swatches-select swatch__list" data-attribute="pa_{{option.name | handleize}}" data-id="{{ option_index }}" data-size="{{product.options_with_values.size}}">
+			   		{{for_color}}
+			   	</ul>
+			   </div>
+			{%- else -%} 
+			   <div class="{{select_class}}{{ option_index }} swatch is-label{%- if forloop.last == true %} mb__25{%- else %} mb__15{%- endif -%}" data-option-index="{{ option_index }}" id="{{select_id}}_{{ option_index }}">
+			   	{%- if downcased_option == 'size' or downcased_option == 'sizes' or downcased_option == 'taille' or downcased_option == lang_option or gl_size_name contains downcased_option_check -%}
+			   	   {%- assign has_size_guide = true -%}
+			   	{%- endif -%}
+			   	{%- capture for_other -%}
+			   	   {%- for value in option.values -%}
+			   		   <li data-index="{{ forloop.index0 }}" aria-label='{{ value }}' class="nt-swatch bg_css_{{ value | handleize }}{%- if first_available_variant and option.selected_value == value %}{%- assign is_selected = value | capitalize %} {{cl_selected}}{%- elsif forloop.first == true and product.selected_variant == blank and first_available_variant == false %}{%- assign is_selected = value | capitalize %} {{cl_selected}}{%- elsif option.selected_value == value and product.selected_variant != blank and first_available_variant == false %}{%- assign is_selected = value %} {{cl_selected}}{%- endif %}" data-value='{{ value | handleize }}' data-bcvalue='bc_{{ value | handleize }}'><a href="javascript:void(0);" data-val='{{ value | handleize  }}'>{{ value }}</a></li>
+			   	   {%- endfor -%}
+			   	{%- endcapture -%}
+			   	<h4 class="swatch__title">{{option.name}}: <span class="nt_name_current">{{is_selected }}</span></h4>
+		   	   <ul class="swatches-select swatch__list" data-attribute="pa_{{option.name | handleize}}" data-id="{{ option_index }}" data-size="{{product.options_with_values.size}}">
+			   		{{for_other}}
+			   	</ul>
+			   </div>
+			{%- endif %}
+   {%- endfor -%}
+</div>

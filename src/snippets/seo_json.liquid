@@ -1,0 +1,152 @@
+<script type="application/ld+json">
+	{%- if template.name == 'collection' -%}
+	    {
+		  "@graph": [
+		    {
+		      "@context": "https://schema.org/",
+		      "@type": "BreadcrumbList",
+		      "itemListElement": [
+		        {
+		          "@type": "ListItem",
+		          "position": "1",
+		          "item": {
+		            "name": "{{ 'general.breadcrumbs.home' | t }}",
+		            "@id": "{{ shop.url }}"
+		          }
+		        },
+		        {
+		          "@type": "ListItem",
+		          "position": "2",
+		          "item": {
+		            "name": "{{ collection.title}}"
+		          }
+		        }
+		      ]
+		    }{%- if collection.products.size > 0 -%},
+		    {
+		      "@context": "https://schema.org/",
+		      "@graph": [
+		        {%- for product in collection.products limit:limit -%}
+		        {
+		          "@type": "Product",
+		          "@id": "{{ product.id }}",
+		          "url": "{{ product.url | within: collection }}",
+		          "name": "{{ product.title }}"
+		        }{%- if forloop.last == false -%},{%- endif -%}
+		        {%- endfor -%}
+		      ]
+		    }{%- endif -%}
+		  ]
+		}
+	{%- else -%}
+	    {%- assign current_variant = product.selected_or_first_available_variant -%}
+	    {
+		  "@context": "https://schema.org/",
+		  "@graph": [
+		    {
+		      "@context": "https://schema.org/",
+		      "@type": "BreadcrumbList",
+		      "itemListElement": [
+		        {
+		          "@type": "ListItem",
+		          "position": "1",
+		          "item": {
+		            "name": "{{ 'general.breadcrumbs.home' | t }}",
+		            "@id": "{{ shop.url }}"
+		          }
+		        },
+		        {% if collection %}
+			        {
+			          "@type": "ListItem",
+			          "position": "2",
+			          "item": {
+			            "name": {{ collection.title | json }},
+			            "@id": "{{ collection.url }}"
+			          }
+			        },
+			        {
+			          "@type": "ListItem",
+			          "position": "3",
+			          "item": {
+			            "name": {{ product.title | json }}
+			          }
+			        }
+		        {% else %}
+		           {
+			          "@type": "ListItem",
+			          "position": "2",
+			          "item": {
+			            "name": {{ product.title | json }}
+			          }
+			        }
+		        {% endif %}
+		      ]
+		    },
+		    {
+		      "@context": "https://schema.org/",
+		      "@type": "Product",
+		      "@id": "{{ shop.url | append: '/products/' | append: product.handle }}",
+		      "url": "{{ shop.url | append: '/products/' | append: product.handle }}",
+		      "name": {{ product.title | json }},
+			   "image": "{{ product.featured_image.src | img_url: 'master' }}",
+			   "description": {%- if product.metafields.meta.description_excerpt -%}{{  product.metafields.meta.description_excerpt | strip_html | json }}{%-else-%}{{ product.description | strip_html | truncatewords:100 | json }}{%-endif-%},
+		      "sku": "{{current_variant.sku}}",
+		      "offers": [
+		        {
+		          "@type": "Offer",
+		          "price": "{{ current_variant.price | money_without_currency }}",
+		          "priceCurrency": "{{ shop.currency }}",
+		          "availability": "http://schema.org/{%- if product.available -%}InStock{%- else -%}OutOfStock{%- endif -%}",
+		          "url": "{{ shop.url | append: '/products/' | append: product.handle }}",
+		          "seller": {
+		            "@type": "Organization",
+		            "name": "{{ shop.name }}",
+		            "url": "{{shop.url}}"
+		          }
+		        }
+		      ]{%- if product.metafields.ryviu.reviews and product.metafields.ryviu.reviews != blank -%}
+			    {%- assign kt_rv_count = product.metafields.ryviu.reviews | split: 'reviewCount" content="' | last | split: '"' |first | plus: 0 -%}
+			    {%- assign kt_rv_val = product.metafields.ryviu.reviews | split: 'ratingValue" content="' | last | split: '"' |first | plus: 0 -%}
+			    {%- if kt_rv_count > 0 and kt_rv_val > 0 -%},
+			    "aggregateRating": {
+			      "@type": "AggregateRating",
+			      "description": "Ryviu",
+			      "ratingValue": {{ kt_rv_val }},
+			      "ratingCount": {{ kt_rv_count }}
+			    }
+			    {%- endif -%}
+			    {%- elsif product.metafields.yotpo.reviews_count and product.metafields.yotpo.reviews_count != "0" -%},
+			      "aggregateRating": {
+			        "@type": "AggregateRating",
+			        "description": "YOTPO",
+			        "ratingValue": "{{ product.metafields.yotpo.reviews_average }}",
+			        "ratingCount": "{{ product.metafields.yotpo.reviews_count  }}"
+			      }
+		      {%- elsif product.metafields.spr.reviews and product.metafields.spr.reviews != blank -%}
+			      {%- assign ratingCount = product.metafields.spr.reviews | split: 'reviewCount" content="' | last | split: '"' |first | plus: 0 -%}
+				   {%- assign ratingValue = product.metafields.spr.reviews | split: 'ratingValue" content="' | last | split: '"' |first | plus: 0  -%}
+			      {%- if ratingCount == 0 and ratingValue == 0 -%}
+				      {%- assign ratingCount = product.metafields.spr.reviews | split: 'votes" content="' | last | split: '"' |first | plus: 0 -%}
+				      {%- assign ratingValue = product.metafields.spr.reviews | split: 'average" content="' | last | split: '"' |first | plus: 0  -%}
+			      {%- endif -%}
+			      {% if ratingCount > 0 and ratingValue > 0 %},
+			      "aggregateRating": {
+				      "@type": "AggregateRating",
+				      "description": "Shopify Product Reviews",
+				      "ratingValue": "{{ratingValue}}",
+				      "ratingCount": "{{ratingCount}}"
+			      }
+			      {%- endif -%}
+			   {%- elsif product.metafields.loox.num_reviews and product.metafields.loox.num_reviews != "0" -%},
+			      "aggregateRating": {
+				      "@type": "AggregateRating",
+				      "description": "Loox",
+				      "ratingValue": {{ product.metafields.loox.avg_rating }},
+                  "ratingCount": {{ product.metafields.loox.num_reviews }}
+			      }
+		      {%- endif -%}
+		    }
+		  ]
+		}
+	{%- endif -%}
+</script>

@@ -1,0 +1,20 @@
+<span class="price">
+{%- if linklists[product.handle].links.size > 0 -%}
+  {%- if settings.price_format == '1' -%}
+ {{ product.price | money }}{%- if product.compare_at_price != blank %} – {{ product.compare_at_price | money }}{%- endif -%}
+ {%- else -%}
+ <small><em>{{ 'products.product.from' | t }}</em></small> {{ product.price | money }}
+ {%- endif -%}
+{%- else -%}
+  {%- if product.price_varies -%}
+   {%- if settings.price_format == '1' -%}
+      {{ product.price_min | money }} – {{ product.price_max | money }}
+   {%- else -%}
+      <small><em>{{ 'products.product.from' | t }}</em></small> {{ product.price_min | money }}
+   {%- endif -%}
+  {%- elsif on_sale -%}<del>{{ current_variant.compare_at_price  | money }}</del> <ins>{{ current_variant.price | money }}</ins>
+  {%- else -%}
+  {{ current_variant.price | money }}
+  {%- endif -%}
+ {%- endif -%}
+</span>
